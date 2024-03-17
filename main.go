@@ -2,48 +2,35 @@ package main
 
 import (
 	"fmt"
+	"github.com/julienschmidt/httprouter"
 	"html/template"
-	"log"
+	"io"
 	"net/http"
+	"os"
 )
 
 func main() {
-	http.HandleFunc("/", Anasayfa)
-	http.HandleFunc("/detay", Detay)
-	fmt.Println("Server listening on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	r := httprouter.New()
+	r.GET("/", Anasayfa)
+	r.POST("/deneme", Deneme)
+	http.ListenAndServe(":8080", r)
 }
 
-func Anasayfa(w http.ResponseWriter, r *http.Request) {
-	view, err := template.ParseFiles("index.html", "navbar.html")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	data := map[string]interface{}{
-		"Title": "Anasayfa",
-		"Name":  "Golang",
-	}
-	err = view.ExecuteTemplate(w, "anasayfa", data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+func Anasayfa(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	view, _ := template.ParseFiles("index.html")
+	view.Execute(w, nil)
 }
 
-func Detay(w http.ResponseWriter, r *http.Request) {
-	view, err := template.ParseFiles("detay.html", "navbar.html")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+func Deneme(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	username := r.FormValue("username")
+	selected := r.FormValue("select_box")
+	check := r.FormValue("checkbox")
 
-	data := map[string]interface{}{
-		"Title": "Detay",
-		"Name":  "Golang",
-	}
-	err = view.ExecuteTemplate(w, "detay", data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	r.ParseMultipartForm(10 << 20)
+	file, header, _ := r.FormFile("file")
+	f, _ := os.OpenFile(header.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+	io.Copy(f, file)
+	fmt.Println("Username: ", username)
+	fmt.Println("Select Box: ", selected)
+	fmt.Println("Checkbox: ", check)
 }
