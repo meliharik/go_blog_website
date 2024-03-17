@@ -1,36 +1,38 @@
 package main
 
 import (
-	"fmt"
-	"github.com/julienschmidt/httprouter"
-	"html/template"
-	"io"
-	"net/http"
-	"os"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
+type User struct {
+	gorm.Model
+	Username, Password string
+}
+
 func main() {
-	r := httprouter.New()
-	r.GET("/", Anasayfa)
-	r.POST("/deneme", Deneme)
-	http.ListenAndServe(":8080", r)
-}
+	dsn := "root:root@tcp(127.0.0.1:8889)/gorm?charset=utf8mb4&parseTime=True&loc=Local"
+	db, _ := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
-func Anasayfa(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	view, _ := template.ParseFiles("index.html")
-	view.Execute(w, nil)
-}
+	//db.Create(&User{Username: "melih", Password: "selambenmelihinsifresi"})
 
-func Deneme(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	username := r.FormValue("username")
-	selected := r.FormValue("select_box")
-	check := r.FormValue("checkbox")
+	//var user User
+	//db.First(&user, 1)
+	//db.First(&user, "username = ?", "admin")
+	//fmt.Println(user.Username, user.Password)
 
-	r.ParseMultipartForm(10 << 20)
-	file, header, _ := r.FormFile("file")
-	f, _ := os.OpenFile(header.Filename, os.O_WRONLY|os.O_CREATE, 0666)
-	io.Copy(f, file)
-	fmt.Println("Username: ", username)
-	fmt.Println("Select Box: ", selected)
-	fmt.Println("Checkbox: ", check)
+	//var users []User
+	//db.Find(&users)
+	//for _, user := range users {
+	//	println(user.Username, user.Password)
+	//}
+
+	//var user User
+	//db.First(&user, 1)
+	////db.Model(&user).Update("Password", "newpassword")
+	//db.Model(&user).Updates(User{Username: "newusername", Password: "newpassword"})
+
+	var user User
+	db.First(&user, 1)
+	db.Delete(&user)
 }
