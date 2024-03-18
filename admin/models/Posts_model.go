@@ -51,13 +51,22 @@ func (post Post) GetAll(where ...interface{}) []Post {
 	return posts
 }
 
-func (post Post) Update(data map[string]interface{}, where ...interface{}) {
+func (post Post) Update(column string, value interface{}) {
 	db, err := gorm.Open(mysql.Open(Dns), &gorm.Config{})
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	db.Model(&post).Where(where).Updates(data)
+	db.Model(&post).Update(column, value)
+}
+
+func (post Post) Updates(data Post) {
+	db, err := gorm.Open(mysql.Open(Dns), &gorm.Config{})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	db.Model(&post).Updates(data)
 }
 
 func (post Post) Delete(where ...interface{}) {
